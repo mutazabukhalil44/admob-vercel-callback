@@ -1,7 +1,7 @@
 import admin from 'firebase-admin';
 
 // 🔐 API Key للحماية
-const API_KEY = process.env.REWARD_API_KEY || 'SECRET_REWARD_KEY';
+const API_KEY = process.env.ADMOB_SECRET || 'SECRET_REWARD_KEY';
 
 // ✅ تهيئة Firebase Admin مرة واحدة فقط
 if (!admin.apps.length) {
