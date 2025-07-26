@@ -1,6 +1,23 @@
-export default function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed. Use POST." });
+import admin from 'firebase-admin';
+
+// 🔐 API Key للحماية
+const API_KEY = process.env.REWARD_API_KEY || 'SECRET_REWARD_KEY';
+
+// ✅ تهيئة Firebase Admin مرة واحدة فقط
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+const db = admin.firestore();
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed. Use POST.' });
+  }
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader || authHeader !== `Bearer ${API_KEY}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   const {
@@ -11,15 +28,23 @@ export default function handler(req, res) {
   } = req.body;
 
   if (!userId || !transactionId) {
-    return res.status(400).json({ error: "Missing required fields" });
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  console.log("🎉 Reward received:", {
-    userId,
-    rewardItem,
-    rewardAmount,
-    transactionId,
-  });
+  try {
+    await db.collection('rewards').add({
+      userId,
+      rewardItem,
+      rewardAmount,
+      transactionId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
-  res.status(200).json({ message: "✅ Reward processed" });
+    console.log('🎁 Reward saved:', transactionId);
+
+    return res.status(200).json({ message: '✅ Reward processed & saved' });
+  } catch (error) {
+    console.error('🔥 Firestore error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }
