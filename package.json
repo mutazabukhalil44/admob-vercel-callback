@@ -2,5 +2,8 @@
   "name": "admob-callback",
   "version": "1.0.0",
   "main": "api/reward.js",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^13.4.0"
+  }
 }
